@@ -1,0 +1,36 @@
+unit svetiqueta;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Menus,
+  Data.DB, Vcl.Grids, Vcl.DBGrids, SelectProduto;
+
+type
+  TFormEtiqueta = class(TForm)
+    Panel1: TPanel;
+    btnPesquisar: TButton;
+    EditProduto: TEdit;
+    Label1: TLabel;
+    EditQuantidade: TEdit;
+    Label2: TLabel;
+    Panel2: TPanel;
+    ComboBox1: TComboBox;
+    Label3: TLabel;
+    Panel3: TPanel;
+    DBGrid1: TDBGrid;
+    Button2: TButton;
+    Button3: TButton;
+    procedure btnPesquisarClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+
+
+end.
+

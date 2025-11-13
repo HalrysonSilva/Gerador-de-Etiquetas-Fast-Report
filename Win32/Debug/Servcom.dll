@@ -1,0 +1,1 @@
+Provider Name=SQL Server;Data Source=W\DELPHI;Initial Catalog=servsic;User ID=sa;Password=123;Login Prompt=False

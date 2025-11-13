@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2025/04/10 15:58:03.000.813,=F:\DELPHI\Unit1.pas</Transaction>
+    <Transaction>2025/04/10 16:44:36.000.662,=F:\DELPHI\Unit1.pas</Transaction>
+    <Transaction>2025/04/22 17:05:00.000.310,=F:\DELPHI\Unit1.pas</Transaction>
+    <Transaction>2025/05/06 15:59:11.000.586,=F:\DELPHI\Unit1.pas</Transaction>
+    <Transaction>2025/05/06 16:00:08.000.380,F:\DELPHI\Unit1.pas=C:\Developer\XE10.3\Projetos\ServEtiquetas\svetiqueta.pas</Transaction>
+    <Transaction>2025/05/06 16:00:08.000.380,F:\DELPHI\Unit1.dfm=C:\Developer\XE10.3\Projetos\ServEtiquetas\svetiqueta.dfm</Transaction>
+    <Transaction>2025/05/06 16:00:24.000.106,F:\DELPHI\Project1.dproj=C:\Developer\XE10.3\Projetos\ServEtiquetas\servetiquetas.dproj</Transaction>
+    <Transaction>2025/05/06 16:38:22.000.710,=C:\Developer\XE10.3\Projetos\ServEtiquetas\CONEXAOBD.pas</Transaction>
+    <Transaction>2025/05/06 16:50:59.000.880,=C:\Developer\XE10.3\Projetos\ServEtiquetas\Unit2.pas</Transaction>
+    <Transaction>2025/05/06 16:52:05.000.927,C:\Developer\XE10.3\Projetos\ServEtiquetas\Selectproduto.pas=C:\Developer\XE10.3\Projetos\ServEtiquetas\Unit2.pas</Transaction>
+    <Transaction>2025/05/06 16:52:05.000.927,C:\Developer\XE10.3\Projetos\ServEtiquetas\Selectproduto.dfm=C:\Developer\XE10.3\Projetos\ServEtiquetas\Unit2.dfm</Transaction>
+    <Transaction>2025/05/06 17:23:35.000.046,C:\Developer\XE10.3\Projetos\ServEtiquetas\FRMSelectproduto.pas=C:\Developer\XE10.3\Projetos\ServEtiquetas\Selectproduto.pas</Transaction>
+    <Transaction>2025/05/06 17:23:35.000.046,C:\Developer\XE10.3\Projetos\ServEtiquetas\FRMSelectproduto.dfm=C:\Developer\XE10.3\Projetos\ServEtiquetas\Selectproduto.dfm</Transaction>
+    <Transaction>2025/05/06 17:23:44.000.296,C:\Developer\XE10.3\Projetos\ServEtiquetas\FRMsvetiqueta.dfm=C:\Developer\XE10.3\Projetos\ServEtiquetas\svetiqueta.dfm</Transaction>
+    <Transaction>2025/05/06 17:23:44.000.296,C:\Developer\XE10.3\Projetos\ServEtiquetas\FRMsvetiqueta.pas=C:\Developer\XE10.3\Projetos\ServEtiquetas\svetiqueta.pas</Transaction>
+  </Transactions>
+</BorlandProject>

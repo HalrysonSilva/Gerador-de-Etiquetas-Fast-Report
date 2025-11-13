@@ -1,0 +1,361 @@
+unit FRMSvEtiqueta;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Menus,
+  Data.DB, Vcl.Grids, Vcl.DBGrids, Datasnap.DBClient, frxClass, frxDBSet,frxBarcode, Vcl.DBCtrls;
+
+type
+  Tsvetiquetas = class(TForm)
+    Panel1: TPanel;
+    Label1: TLabel;
+    EditQuantidade: TEdit;
+    Label2: TLabel;
+    Panel2: TPanel;
+    cmdetiqueta: TComboBox;
+    Label3: TLabel;
+    Panel3: TPanel;
+    DBGridSelecao: TDBGrid;
+    btnInserir: TButton;
+    Label4: TLabel;
+    editprodutoselect: TEdit;
+    btnapagaproduto: TButton;
+    procedure ValidarQuantidade;
+    procedure btnPesquisarClick(Sender: TObject);
+    procedure InserirProdutoNaTabela;
+    procedure BuscarProdutoPorCodigo(ACodigo: String);
+    procedure btninserirClick(Sender: TObject);
+    procedure btnlimparClick(Sender: TObject);
+    procedure btnimprimirClick(Sender: TObject);
+    procedure ImprimirEtiquetaSelecionada;
+    procedure FormCreate(Sender: TObject);
+    procedure ApagarProdutoSelecionado;
+    procedure btnapagaprodutoClick(Sender: TObject);
+    procedure editprodutoselectKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure FormShow(Sender: TObject);
+    procedure EditquantidadeKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure EditquantidadeKeyPress(Sender: TObject; var Key: Char);
+    procedure EditquantidadeChange(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  svetiquetas: Tsvetiquetas;
+
+implementation
+
+{$R *.dfm}
+
+uses FRMSelectProduto, CONEXAOBD;
+
+procedure Tsvetiquetas.btnapagaprodutoClick(Sender: TObject);
+begin
+ApagarProdutoSelecionado;
+end;
+
+procedure Tsvetiquetas.BtnImprimirClick(Sender: TObject);
+begin
+datamodule1.frxReport1.ShowReport;
+end;
+
+
+
+procedure Tsvetiquetas.btninserirClick(Sender: TObject);
+begin
+InserirProdutoNaTabela;
+end;
+
+procedure Tsvetiquetas.btnlimparClick(Sender: TObject);
+begin
+  // Apaga todos os registros da tabela TABETIQ
+  DataModule1.QRYADCIONAPRODUTO.Close;
+  DataModule1.QRYADCIONAPRODUTO.SQL.Text := 'DELETE FROM TABETIQ';
+  DataModule1.QRYADCIONAPRODUTO.ExecSQL;
+
+  // Atualiza o DBGridSelecao para refletir a tabela vazia
+  DataModule1.QRYADCIONAPRODUTO.Close;
+  DataModule1.QRYADCIONAPRODUTO.SQL.Text := 'SELECT * FROM TABETIQ ORDER BY Controle DESC';
+  DataModule1.QRYADCIONAPRODUTO.Open;
+end;
+
+procedure Tsvetiquetas.btnPesquisarClick(Sender: TObject);
+begin
+  SelectProduto.LimparFormulario;
+  SelectProduto.ShowModal;
+end;
+
+procedure Tsvetiquetas.FormCreate(Sender: TObject);
+begin
+
+
+   // Executa o comando DELETE para limpar a tabela TABETIQ
+  DataModule1.QRYLIMPATABETIQ.Close;
+  DataModule1.QRYLIMPATABETIQ.SQL.Text := 'DELETE FROM TABETIQ';
+  DataModule1.QRYLIMPATABETIQ.ExecSQL;
+
+  // Atualiza a consulta para refletir a tabela vazia
+  DataModule1.QRYLIMPATABETIQ.Close;
+  DataModule1.QRYLIMPATABETIQ.SQL.Text := 'SELECT * FROM TABETIQ ORDER BY Controle DESC';
+  DataModule1.QRYLIMPATABETIQ.Open;
+
+end;
+
+procedure Tsvetiquetas.FormShow(Sender: TObject);
+begin
+editprodutoselect.SetFocus;
+end;
+
+procedure Tsvetiquetas.InserirProdutoNaTabela;
+var
+  i, qtd, ultimoControle: Integer;
+  codInterno: String;
+  precoVenda: Double;
+  valorPrPrazo: Double; // Renomeado para maior clareza, vai receber PRPRAZO
+begin
+  if (EditProdutoselect.Text <> '') and (EditQuantidade.Text <> '') then
+  begin
+    // Obtém os dados corretos da tabela tabest1, incluindo o PRPRAZO
+    DataModule1.QRYSELECIONAPRODUTOS.Close;
+    DataModule1.QRYSELECIONAPRODUTOS.SQL.Text :=
+      'SELECT CodInterno, PrecoVenda, PRPRAZO FROM tabest1 WHERE Produto = :Produto'; // Adicionado PRPRAZO
+    DataModule1.QRYSELECIONAPRODUTOS.ParamByName('Produto').AsString := EditProdutoselect.Text;
+    DataModule1.QRYSELECIONAPRODUTOS.Open;
+
+    if not DataModule1.QRYSELECIONAPRODUTOS.IsEmpty then
+    begin
+      codInterno := DataModule1.QRYSELECIONAPRODUTOS.FieldByName('CodInterno').AsString;
+      precoVenda := DataModule1.QRYSELECIONAPRODUTOS.FieldByName('PrecoVenda').AsFloat;
+      // Atribui o valor de PRPRAZO (da tabest1) à variável valorPrPrazo
+      // Certifique-se de que o tipo de dado (AsFloat) está correto para PRPRAZO
+      valorPrPrazo := DataModule1.QRYSELECIONAPRODUTOS.FieldByName('PRPRAZO').AsFloat;
+    end
+    else
+    begin
+      ShowMessage('Erro: Produto não encontrado na tabela tabest1.');
+      Exit;
+    end;
+
+    // Obtém o último número de controle
+    DataModule1.QRYULTIMOCONTROLE.Close;
+    DataModule1.QRYULTIMOCONTROLE.SQL.Text := 'SELECT COALESCE(MAX(Controle), 0) AS UltimoControle FROM TABETIQ';
+    DataModule1.QRYULTIMOCONTROLE.Open;
+    ultimoControle := DataModule1.QRYULTIMOCONTROLE.FieldByName('UltimoControle').AsInteger;
+
+    qtd := StrToInt(EditQuantidade.Text); // Obtém a quantidade de etiquetas a serem geradas
+
+    for i := 1 to qtd do
+    begin
+      DataModule1.QRYADCIONAPRODUTO.Close;
+      DataModule1.QRYADCIONAPRODUTO.SQL.Text :=
+        'INSERT INTO TABETIQ (Controle, CodInterno, Produto, Quantidade, PrecoVenda, Preco2) ' + // Usando a coluna Preco2
+        'VALUES (:Controle, :CodInterno, :Produto, :Quantidade, :PrecoVenda, :PrecoPrazoParam)'; // Parâmetro para Preco2
+
+      DataModule1.QRYADCIONAPRODUTO.ParamByName('Controle').AsInteger := ultimoControle + i;
+      DataModule1.QRYADCIONAPRODUTO.ParamByName('CodInterno').AsString := codInterno;
+      DataModule1.QRYADCIONAPRODUTO.ParamByName('Produto').AsString := EditProdutoselect.Text;
+      DataModule1.QRYADCIONAPRODUTO.ParamByName('Quantidade').AsInteger := 1;
+      DataModule1.QRYADCIONAPRODUTO.ParamByName('PrecoVenda').AsFloat := precoVenda;
+      // Define o parâmetro para Preco2 usando o valor de valorPrPrazo
+      DataModule1.QRYADCIONAPRODUTO.ParamByName('PrecoPrazoParam').AsFloat := valorPrPrazo;
+
+      DataModule1.QRYADCIONAPRODUTO.ExecSQL;
+    end;
+
+    // Atualiza o DBGridSelecao para exibir os registros inseridos
+    // Altere o SELECT para incluir a coluna Preco2 se você for exibi-la
+    DataModule1.QRYADCIONAPRODUTO.Close;
+    DataModule1.QRYADCIONAPRODUTO.SQL.Text := 'SELECT Controle, CodInterno, Produto, Quantidade, PrecoVenda, Preco2 FROM TABETIQ ORDER BY Controle DESC';
+    DataModule1.QRYADCIONAPRODUTO.Open;
+  end
+  else
+    ShowMessage('Selecione um produto e informe a quantidade antes de inserir.');
+end;
+
+
+procedure Tsvetiquetas.ImprimirEtiquetaSelecionada;
+var
+  RelatorioSelecionado: TfrxReport;
+begin
+  // Verifica se um índice válido foi selecionado
+  if cmdetiqueta.ItemIndex = -1 then
+  begin
+    ShowMessage('Selecione um modelo de etiqueta antes de imprimir.');
+    Exit;
+  end;
+
+  // Seleciona o relatório baseado no índice
+  case cmdetiqueta.ItemIndex of
+    0: RelatorioSelecionado := DataModule1.ETIQPRUNICO105X30mm;
+    1: RelatorioSelecionado := DataModule1.ETIQ2PRECO105x30mm;
+
+  else
+    ShowMessage('Selecione um modelo de etiqueta válido.');
+    Exit;
+  end;
+
+  // Certifica-se de que a query está aberta para alimentar o relatório
+  DataModule1.QRYTABETIQ.Open;
+
+  // Vincula a query ao relatório
+  DataModule1.DSdbtabetiq.DataSet := DataModule1.QRYTABETIQ;
+
+  // Prepara e exibe o relatório selecionado
+  if RelatorioSelecionado.PrepareReport then
+    RelatorioSelecionado.ShowReport
+  else
+    ShowMessage('Erro ao carregar o relatório.');
+end;
+
+
+
+
+
+
+procedure Tsvetiquetas.ApagarProdutoSelecionado;
+var
+  ProdutoSelecionado: String;
+begin
+  // Verifica se há um produto selecionado no DBGrid
+  if not DBGridSelecao.DataSource.DataSet.IsEmpty then
+  begin
+    ProdutoSelecionado := DBGridSelecao.DataSource.DataSet.FieldByName('CodInterno').AsString;
+
+    // Executa o comando DELETE para remover o produto da tabela TABETIQ
+    DataModule1.QRYLIMPATABETIQ.Close;
+    DataModule1.QRYLIMPATABETIQ.SQL.Text := 'DELETE FROM TABETIQ WHERE CodInterno = :CodInterno';
+    DataModule1.QRYLIMPATABETIQ.ParamByName('CodInterno').AsString := ProdutoSelecionado;
+    DataModule1.QRYLIMPATABETIQ.ExecSQL;
+
+    // Atualiza o DBGridSelecao para refletir a remoção
+    DataModule1.QRYADCIONAPRODUTO.Close;
+    DataModule1.QRYADCIONAPRODUTO.Open;
+  end
+  else
+    ShowMessage('Nenhum produto selecionado para apagar.');
+end;
+
+
+procedure Tsvetiquetas.BuscarProdutoPorCodigo(ACodigo: String);
+var
+  ProdutoEncontrado: String;
+begin
+  if (ACodigo = '') then
+    Exit;
+
+  DataModule1.QRYSELECIONAPRODUTOS.Close;
+  DataModule1.QRYSELECIONAPRODUTOS.SQL.Text :=
+    'SELECT CodInterno, Produto, Quantidade, PrecoVenda, PRPRAZO FROM tabest1 WHERE CodInterno = :Cod OR CODIGO = :Cod OR CODBARRA = :Cod';
+  DataModule1.QRYSELECIONAPRODUTOS.ParamByName('Cod').AsString := ACodigo;
+  DataModule1.QRYSELECIONAPRODUTOS.Open;
+
+  if not DataModule1.QRYSELECIONAPRODUTOS.IsEmpty then
+  begin
+    ProdutoEncontrado := DataModule1.QRYSELECIONAPRODUTOS.FieldByName('Produto').AsString;
+    EditProdutoselect.Text := ProdutoEncontrado;
+    EditQuantidade.Text := '1'; // Ou seu valor padrão
+    // FOCO AGORA VAI PARA O EditQuantidade
+    EditQuantidade.SetFocus;
+  end
+  else
+  begin
+    //ShowMessage('Produto com código "' + ACodigo + '" não encontrado. Abrindo tela de busca de produtos.');
+    EditProdutoselect.Clear;
+
+    SelectProduto.LimparFormulario;
+    SelectProduto.Editselectproduto.Text := ACodigo; // Pré-preenche a busca
+    SelectProduto.ShowModal;
+
+    // Após fechar o FRMSelectProduto, o EditProdutoselect já estará preenchido se algo foi selecionado.
+    // O foco vai para EditQuantidade, se foi preenchido, ou volta para EditProdutoselect.
+    if EditProdutoselect.Text = '' then // Se nada foi selecionado no form de busca
+      EditProdutoselect.SetFocus // Volta o foco para o campo de código para nova tentativa
+    else
+      EditQuantidade.SetFocus; // Se algo foi selecionado, foca na quantidade
+  end;
+end;
+
+// **VERSÃO ATUALIZADA DA EditprodutoselectKeyDown (para mover o foco)**
+procedure Tsvetiquetas.EditprodutoselectKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Key = VK_RETURN) or (Key = VK_TAB) then
+  begin
+    // Chama a procedure para buscar o produto pelo texto do EditProdutoselect
+    // independentemente de já ter havido um "change"
+    BuscarProdutoPorCodigo(Trim(EditProdutoselect.Text));
+
+    // O foco já será definido dentro de BuscarProdutoPorCodigo
+    // (para EditQuantidade ou EditProdutoselect, dependendo do resultado da busca).
+
+    Key := 0; // Consome a tecla para evitar que ela seja processada por outros componentes
+  end;
+end;
+
+
+
+
+
+
+procedure Tsvetiquetas.EditquantidadeChange(Sender: TObject);
+begin
+ValidarQuantidade;
+end;
+
+procedure Tsvetiquetas.EditquantidadeKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then // Verifica se a tecla pressionada foi o Enter
+  begin
+    InserirProdutoNaTabela; // Chama a procedure para inserir o produto na tabela
+    Key := 0; // Consome a tecla Enter para evitar que ela cause outro comportamento padrão
+  end;
+end;
+
+
+procedure Tsvetiquetas.EditquantidadeKeyPress(Sender: TObject; var Key: Char);
+begin
+
+  // Permite apenas dígitos (0-9), Backspace (#8) e Delete (#127)
+  if not (Key in ['0'..'9', #8, #127]) then
+  begin
+    Key := #0; // Anula a tecla se não for um número ou Backspace/Delete
+  end;
+
+end;
+
+procedure Tsvetiquetas.ValidarQuantidade;
+var
+  qtd: Integer;
+begin
+  if TryStrToInt(EditQuantidade.Text, qtd) then
+  begin
+    if qtd > 126 then
+    begin
+      ShowMessage('A quantidade máxima permitida é 126. O valor será ajustado.');
+      EditQuantidade.Text := '126';
+      EditQuantidade.SelectAll; // Seleciona o texto para facilitar a correção
+    end
+    else if qtd < 1 then // Também é bom evitar quantidades menores que 1
+    begin
+      ShowMessage('A quantidade mínima permitida é 1. O valor será ajustado.');
+      EditQuantidade.Text := '1';
+      EditQuantidade.SelectAll;
+    end;
+  end
+  else if (EditQuantidade.Text <> '') then // Se não for número e não estiver vazio
+  begin
+    ShowMessage('Por favor, digite apenas números para a quantidade.');
+    EditQuantidade.Clear; // Limpa o campo se for texto inválido
+    EditQuantidade.SetFocus;
+  end;
+end;
+
+end.
+

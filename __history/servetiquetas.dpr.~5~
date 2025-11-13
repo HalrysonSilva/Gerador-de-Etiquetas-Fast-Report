@@ -1,0 +1,18 @@
+program servetiquetas;
+
+uses
+  Vcl.Forms,
+  FRMsvetiqueta in 'FRMsvetiqueta.pas' {SVETIQUETAS},
+  CONEXAOBD in 'CONEXAOBD.pas' {DataModule1: TDataModule},
+  FRMSelectproduto in 'FRMSelectproduto.pas' {SELECTPRODUTO};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TDataModule1, DataModule1);
+  Application.CreateForm(TSVETIQUETAS, SVETIQUETAS);
+  Application.CreateForm(TSELECTPRODUTO, SELECTPRODUTO);
+  Application.Run;
+end.
